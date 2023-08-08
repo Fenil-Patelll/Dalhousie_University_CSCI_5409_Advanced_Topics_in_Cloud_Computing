@@ -1,0 +1,14 @@
+services:
+  container1:
+    image: csci5308vm25/container1:1.0
+    ports:
+      - 6000:6000
+    volumes:
+      - .:/app/testfiles
+
+  container2:
+    image: csci5308vm25/container2:1.0
+    ports:
+      - 6002:6002
+    volumes:
+      - .:/app/testfiles
