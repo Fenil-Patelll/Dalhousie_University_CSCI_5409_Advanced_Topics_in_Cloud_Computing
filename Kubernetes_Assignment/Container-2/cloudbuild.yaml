@@ -1,0 +1,49 @@
+steps:
+
+- name: 'gcr.io/cloud-builders/docker'
+  id: Build
+  args:
+  - 'build'
+  - '-t'
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/container2'
+  - '.'
+
+- name: 'gcr.io/cloud-builders/docker'
+  id: Push
+  args:
+  - 'push'
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/container2'
+
+- name: 'gcr.io/cloud-builders/kubectl'
+  id: ApplyPVC
+  args:
+  - 'apply'
+  - '-f'
+  - './my-app-pvc.yaml'
+  waitFor:
+  - Push  
+
+- name: "gcr.io/cloud-builders/gke-deploy"
+  id: "Deploy to GKE"
+  args:
+    [
+      "run",
+      "--filename=k8s-deployment.yaml",
+      "--image=us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/container1",
+      "--cluster=k8s",
+      "--location=us-central1-c",
+    ]
+
+# - name: 'gcr.io/cloud-builders/kubectl'
+#   id: ApplyDeployment
+#   args:
+#   - 'apply'
+#   - '-f'
+#   - './k8s-deployment.yaml'
+#   waitFor:
+#   - ApplyPVC
+    
+options:
+  env:
+    - 'CLOUDSDK_COMPUTE_REGION=us-central1-c'
+    - 'CLOUDSDK_CONTAINER_CLUSTER=k8s'
